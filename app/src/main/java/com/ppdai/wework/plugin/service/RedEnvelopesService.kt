@@ -22,6 +22,10 @@ import com.ppdai.wework.plugin.util.SP
  */
 class RedEnvelopesService : AccessibilityService() {
 
+    companion object{
+        val handler = Handler(Looper.getMainLooper())
+    }
+
     private var currentWindow: String? = null
 
     private var messageListActivityNodeInfo: AccessibilityNodeInfo? = null
@@ -44,8 +48,6 @@ class RedEnvelopesService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
-
-        Logger.d("$event")
 
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
@@ -193,7 +195,7 @@ class RedEnvelopesService : AccessibilityService() {
         val delay: Long = SP.getInstance().getLong(SpKeys.DELAY_OPEN_RED_ENVELOPES)
         if (delay > 0L) {
             Logger.d("已开启延迟打开红包，将延迟$delay ms后开启红包")
-            Handler(Looper.getMainLooper()).postDelayed({ findAndClickFirstClickableParentNode(openRedEnvelopesNodeList.last()) }, delay)
+            handler.postDelayed({ findAndClickFirstClickableParentNode(openRedEnvelopesNodeList.last()) }, delay)
         } else {
             findAndClickFirstClickableParentNode(openRedEnvelopesNodeList.last())
         }
