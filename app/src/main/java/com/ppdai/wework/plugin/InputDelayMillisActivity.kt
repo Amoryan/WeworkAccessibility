@@ -28,7 +28,7 @@ class InputDelayMillisActivity : AppCompatActivity() {
 
         tvSave.setOnClickListener {
             val delayMillis = etInput.text?.toString()?.toLong()
-            if (delayMillis == null || delayMillis == 0L) {
+            if (delayMillis == null) {
                 Toast.makeText(this, "请输入延迟毫秒数", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
