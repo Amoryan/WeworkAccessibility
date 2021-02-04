@@ -221,7 +221,6 @@ class RedEnvelopesService : AccessibilityService() {
         var clickNode = node
         while (clickNode != null) {
             if (clickNode.isClickable) {
-                clickRedEnvelopesNode = clickNode
                 clickNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                 break
             }
