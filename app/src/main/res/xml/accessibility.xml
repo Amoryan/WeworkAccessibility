@@ -6,4 +6,4 @@
     android:canRetrieveWindowContent="true"
     android:description="@string/app_description"
     android:notificationTimeout="100"
-    android:packageNames="com.tencent.wework|com.tencent.mm" />
+    android:packageNames="com.tencent.wework" />

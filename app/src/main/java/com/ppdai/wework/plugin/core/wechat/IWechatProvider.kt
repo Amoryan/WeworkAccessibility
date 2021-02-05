@@ -10,4 +10,13 @@ package com.ppdai.wework.plugin.core.wechat
 interface IWechatProvider {
 
     fun notificationRedEnvelopesText(): String
+
+    fun msgItemContainerId(): String
+    fun msgItemRedEnvelopesFlagId(): String
+    fun msgItemRedEnvelopesInvalidId(): String
+
+    fun redEnvelopesCoverOpenId(): String
+    fun redEnvelopesCoverCloseId(): String
+
+    fun redEnvelopesDetailCloseId(): String
 }

@@ -7,11 +7,15 @@ import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.ppdai.wework.plugin.constants.SpKeys
+import com.ppdai.wework.plugin.constants.wechat.WeChatConfig
+import com.ppdai.wework.plugin.constants.wechat.WechatSpKeys
 import com.ppdai.wework.plugin.constants.wework.WeworkConfig
 import com.ppdai.wework.plugin.constants.wework.WeworkSpKeys
+import com.ppdai.wework.plugin.core.wechat.IWechatProvider
 import com.ppdai.wework.plugin.core.wework.IWeworkProvider
 import com.ppdai.wework.plugin.util.Logger
 import com.ppdai.wework.plugin.util.SP
+import com.ppdai.wework.plugin.util.wechat.WechatManager
 import com.ppdai.wework.plugin.util.wework.WeworkManager
 
 /**
@@ -28,6 +32,7 @@ class RedEnvelopesService : AccessibilityService() {
     }
 
     private var weworkProvider: IWeworkProvider = WeworkManager.getInstance().provider
+    private var wechatProvider: IWechatProvider = WechatManager.getInstance().provider
 
     private var currentWindow: String? = null
 
@@ -59,61 +64,61 @@ class RedEnvelopesService : AccessibilityService() {
             }
             AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED -> {
                 Logger.d("接收到 WINDOW_CONTENT_CHANGED 事件")
-                onWindowContentChanged(event)
+                onWindowContentChanged()
             }
         }
     }
 
     private fun onWindowStateChanged(event: AccessibilityEvent) {
-        Logger.d("$rootInActiveWindow")
+        when (event.packageName) {
+            WeChatConfig.PACKAGE_NAME_WECHAT -> {
+                currentWindow = event.className.toString()
+                // 微信主界面和聊天都是LauncherUI
+                if ("android.widget.LinearLayout" == currentWindow) {
+                    currentWindow = WeChatConfig.ACTIVITY_NAME_MESSAGE_LIST
+                }
+                Logger.d("当前window: $currentWindow")
+                val windowName = currentWindow ?: return
 
-        currentWindow = event.className.toString()
-
-        val windowName = currentWindow ?: return
-
-        when (windowName) {
-            WeworkConfig.ACTIVITY_NAME_MESSAGE_LIST -> {
-                Logger.d("当前 Window 是 $currentWindow")
-                // 如果是新的消息列表，清空数据
-                if (rootInActiveWindow != messageListActivityNodeInfo) {
-                    messageListActivityNodeInfo = rootInActiveWindow
-                    messageListActivityRedEnvelopesFilterList.clear()
+                when (windowName) {
+                    WeChatConfig.ACTIVITY_NAME_RED_ENVELOPES_COVER -> openWechatRedEnvelopes()
                 }
             }
-            WeworkConfig.ACTIVITY_NAME_RED_ENVELOPES_COVER -> {
-                Logger.d("当前 Window 是 $currentWindow")
-                // 红包封面
-                openRedEnvelopes()
-            }
-            WeworkConfig.ACTIVITY_NAME_RED_ENVELOPES_DETAIL -> {
-                Logger.d("当前 Window 是 $currentWindow")
+            WeworkConfig.PACKAGE_NAME_WEWORK -> {
+                currentWindow = event.className.toString()
+                Logger.d("当前window: $currentWindow")
+                val windowName = currentWindow ?: return
+
+                when (windowName) {
+                    WeworkConfig.ACTIVITY_NAME_MESSAGE_LIST -> {
+                        // 如果是新的消息列表，清空数据
+                        if (rootInActiveWindow != messageListActivityNodeInfo) {
+                            messageListActivityNodeInfo = rootInActiveWindow
+                            messageListActivityRedEnvelopesFilterList.clear()
+                        }
+                    }
+                    WeworkConfig.ACTIVITY_NAME_RED_ENVELOPES_COVER -> openWeworkRedEnvelopes()
+                }
             }
         }
     }
 
-    private fun onWindowContentChanged(event: AccessibilityEvent) {
+    private fun onWindowContentChanged() {
         val windowName = currentWindow ?: return
         when (windowName) {
-            WeworkConfig.ACTIVITY_NAME_MESSAGE_LIST -> {
-                // 消息列表界面，查询是否有红包
-                queryRedEnvelopes()
-            }
-            WeworkConfig.ACTIVITY_NAME_RED_ENVELOPES_COVER -> {
-                // 红包封面
-            }
-            WeworkConfig.ACTIVITY_NAME_RED_ENVELOPES_DETAIL -> {
-                // 红包详情
-                closeRedEnvelopesDetail()
-            }
+            WeworkConfig.ACTIVITY_NAME_MESSAGE_LIST -> queryWeworkRedEnvelopes()
+            WeworkConfig.ACTIVITY_NAME_RED_ENVELOPES_DETAIL -> closeWeworkRedEnvelopesDetail()
+            WeChatConfig.ACTIVITY_NAME_MESSAGE_LIST -> queryWechatRedEnvelopes()
+            WeChatConfig.ACTIVITY_NAME_RED_ENVELOPES_DETAIL -> closeWechatRedEnvelopesDetail()
         }
     }
 
     /**
-     * 查询是否有红包节点
+     * 查询企业微信聊天界面是否有红包节点
      */
-    private fun queryRedEnvelopes() {
+    private fun queryWeworkRedEnvelopes() {
         if (!SP.getInstance().getBoolean(WeworkSpKeys.WEWORK_AUTO_CLICK_RED_ENVELOPES_MSG)) {
-            Logger.d("自动点击红包功能已关闭，请到设置里面开启")
+            Logger.d("企业微信自动点击红包功能已关闭，请到设置里面开启")
             return
         }
 
@@ -170,11 +175,10 @@ class RedEnvelopesService : AccessibilityService() {
         }
     }
 
-
     /**
-     * 打开红包
+     * 打开企业微信红包
      */
-    private fun openRedEnvelopes() {
+    private fun openWeworkRedEnvelopes() {
         val rootNode = rootInActiveWindow
         val openRedEnvelopesNodeList = rootNode.findAccessibilityNodeInfosByViewId(weworkProvider.redEnvelopesCoverOpenId())
 
@@ -188,32 +192,102 @@ class RedEnvelopesService : AccessibilityService() {
         }
 
         if (!SP.getInstance().getBoolean(WeworkSpKeys.WEWORK_AUTO_OPEN_RED_ENVELOPES)) {
-            Logger.d("自动打开红包功能已关闭，请到设置里面开启")
+            Logger.d("企业微信自动打开红包功能已关闭，请到设置里面开启")
             return
         }
 
-        // 点击开启红包
-        Logger.d("从打开红包节点向上查找第一个可点击的节点")
-
-        val delay: Long = SP.getInstance().getLong(SpKeys.DELAY_OPEN_RED_ENVELOPES)
-        if (delay > 0L) {
-            Logger.d("已开启延迟打开红包，将延迟$delay ms后开启红包")
-            handler.postDelayed({ findAndClickFirstClickableParentNode(openRedEnvelopesNodeList.last()) }, delay)
-        } else {
-            findAndClickFirstClickableParentNode(openRedEnvelopesNodeList.last())
-        }
+        openRedEnvelopes(openRedEnvelopesNodeList.last())
     }
 
     /**
-     * 关闭红包详情页
+     * 企业微信关闭红包详情页
      */
-    private fun closeRedEnvelopesDetail() {
+    private fun closeWeworkRedEnvelopesDetail() {
         if (!SP.getInstance().getBoolean(WeworkSpKeys.WEWORK_AUTO_CLOSE_RED_ENVELOPES_DETAIL)) {
-            Logger.d("抢完红包自动关闭界面功能已关闭，请到设置里面开启")
+            Logger.d("企业微信抢完红包自动关闭界面功能已关闭，请到设置里面开启")
             return
         }
         val rootNode = rootInActiveWindow
         val closeNodeList = rootNode.findAccessibilityNodeInfosByViewId(weworkProvider.redEnvelopesDetailCloseId())
+        findAndClickFirstClickableParentNode(closeNodeList.firstOrNull())
+    }
+
+    /**
+     * 查询微信聊天界面是否有红包节点
+     */
+    private fun queryWechatRedEnvelopes() {
+        if (!SP.getInstance().getBoolean(WechatSpKeys.WECHAT_AUTO_CLICK_RED_ENVELOPES_MSG)) {
+            Logger.d("微信自动点击红包功能已关闭，请到设置里面开启")
+            return
+        }
+
+        val rootNode = rootInActiveWindow
+        // 查找消息Container Node
+        val messageItemContainerNodeList = rootNode.findAccessibilityNodeInfosByViewId(wechatProvider.msgItemContainerId())
+        Logger.d("查找到消息数量: ${messageItemContainerNodeList.size}")
+
+        if (messageItemContainerNodeList.isEmpty()) {
+            return
+        }
+
+        /*
+            反向遍历消息 Container ，在每个Node 上做如下事情
+            1. 是否是红包消息
+            2. 是否有效
+         */
+        messageItemContainerNodeList.reverse()
+        for (messageItemContainerNode in messageItemContainerNodeList) {
+            // 消息上找红包ImageView
+            val redEnvelopesImageViewNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(wechatProvider.msgItemRedEnvelopesFlagId())
+            if (redEnvelopesImageViewNodeList.isEmpty()) {
+                Logger.d("此条消息不是红包消息，忽略")
+            } else {
+                // 查找是否有红包已领取 TextView的显示，如果有说明
+                val invalidNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(wechatProvider.msgItemRedEnvelopesInvalidId())
+                if (invalidNodeList.isNotEmpty()) {
+                    Logger.d("此条消息是红包消息，但是已经被领取了，忽略")
+                    continue
+                } else {
+                    Logger.d("此条消息是红包消息，且未被领取，执行点击")
+                    findAndClickFirstClickableParentNode(redEnvelopesImageViewNodeList.first())
+                }
+            }
+        }
+    }
+
+    /**
+     * 打开微信红包
+     */
+    private fun openWechatRedEnvelopes() {
+        val rootNode = rootInActiveWindow
+        val openRedEnvelopesNodeList = rootNode.findAccessibilityNodeInfosByViewId(wechatProvider.redEnvelopesCoverOpenId())
+
+        if (openRedEnvelopesNodeList.isEmpty()) {
+            Logger.d("此红包已过期")
+            // 关闭红包封面
+            val closeRedEnvelopesCoverNodeList = rootNode.findAccessibilityNodeInfosByViewId(wechatProvider.redEnvelopesCoverCloseId())
+            findAndClickFirstClickableParentNode(closeRedEnvelopesCoverNodeList.firstOrNull())
+            return
+        }
+
+        if (!SP.getInstance().getBoolean(WechatSpKeys.WECHAT_AUTO_OPEN_RED_ENVELOPES)) {
+            Logger.d("微信自动打开红包功能已关闭，请到设置里面开启")
+            return
+        }
+
+        openRedEnvelopes(openRedEnvelopesNodeList.last())
+    }
+
+    /**
+     * 微信关闭红包详情页
+     */
+    private fun closeWechatRedEnvelopesDetail() {
+        if (!SP.getInstance().getBoolean(WechatSpKeys.WECHAT_AUTO_CLOSE_RED_ENVELOPES_DETAIL)) {
+            Logger.d("微信抢完红包自动关闭界面功能已关闭，请到设置里面开启")
+            return
+        }
+        val rootNode = rootInActiveWindow
+        val closeNodeList = rootNode.findAccessibilityNodeInfosByViewId(wechatProvider.redEnvelopesDetailCloseId())
         findAndClickFirstClickableParentNode(closeNodeList.firstOrNull())
     }
 
@@ -228,6 +302,19 @@ class RedEnvelopesService : AccessibilityService() {
                 break
             }
             clickNode = clickNode.parent
+        }
+    }
+
+    /**
+     * 打开红包
+     */
+    private fun openRedEnvelopes(nodeInfo: AccessibilityNodeInfo) {
+        val delay: Long = SP.getInstance().getLong(SpKeys.DELAY_OPEN_RED_ENVELOPES)
+        if (delay > 0L) {
+            Logger.d("已开启延迟打开红包，将延迟$delay ms后开启红包")
+            handler.postDelayed({ findAndClickFirstClickableParentNode(nodeInfo) }, delay)
+        } else {
+            findAndClickFirstClickableParentNode(nodeInfo)
         }
     }
 }
