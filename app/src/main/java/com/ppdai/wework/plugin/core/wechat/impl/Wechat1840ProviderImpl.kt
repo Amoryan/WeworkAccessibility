@@ -13,7 +13,7 @@ class Wechat1840ProviderImpl : IWechatProvider {
 
     override fun notificationRedEnvelopesText(): String = "[微信红包]"
 
-    override fun msgItemContainerId(): String = "com.tencent.mm:id/auf"
+    override fun msgItemContainerId(): String = "com.tencent.mm:id/atz"
     override fun msgItemRedEnvelopesFlagId(): String = "com.tencent.mm:id/tv"
     override fun msgItemRedEnvelopesInvalidId(): String = "com.tencent.mm:id/tt"
 

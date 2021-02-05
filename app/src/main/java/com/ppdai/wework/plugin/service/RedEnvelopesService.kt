@@ -2,6 +2,7 @@ package com.ppdai.wework.plugin.service
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
@@ -81,7 +82,7 @@ class RedEnvelopesService : AccessibilityService() {
                 val windowName = currentWindow ?: return
 
                 when (windowName) {
-                    WeChatConfig.ACTIVITY_NAME_RED_ENVELOPES_COVER -> openWechatRedEnvelopes()
+                    WeChatConfig.ACTIVITY_NAME_RED_ENVELOPES_COVER -> openWechatRedEnvelopes(event)
                 }
             }
             WeworkConfig.PACKAGE_NAME_WEWORK -> {
@@ -170,6 +171,9 @@ class RedEnvelopesService : AccessibilityService() {
                         }
                         clickNode = clickNode.parent
                     }
+                    if (clickNode.isClickable) {
+                        break
+                    }
                 }
             }
         }
@@ -224,32 +228,25 @@ class RedEnvelopesService : AccessibilityService() {
         val rootNode = rootInActiveWindow
         // 查找消息Container Node
         val messageItemContainerNodeList = rootNode.findAccessibilityNodeInfosByViewId(wechatProvider.msgItemContainerId())
-        Logger.d("查找到消息数量: ${messageItemContainerNodeList.size}")
+        Logger.d("查找到红包消息数量: ${messageItemContainerNodeList.size}")
 
         if (messageItemContainerNodeList.isEmpty()) {
             return
         }
 
-        /*
-            反向遍历消息 Container ，在每个Node 上做如下事情
-            1. 是否是红包消息
-            2. 是否有效
-         */
         messageItemContainerNodeList.reverse()
         for (messageItemContainerNode in messageItemContainerNodeList) {
-            // 消息上找红包ImageView
-            val redEnvelopesImageViewNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(wechatProvider.msgItemRedEnvelopesFlagId())
-            if (redEnvelopesImageViewNodeList.isEmpty()) {
-                Logger.d("此条消息不是红包消息，忽略")
+            val parentNode = messageItemContainerNode.parent
+            // 查找是否有红包已领取 TextView的显示，如果有说明
+            val invalidNodeList = parentNode.findAccessibilityNodeInfosByViewId(wechatProvider.msgItemRedEnvelopesInvalidId())
+            if (invalidNodeList.isNotEmpty()) {
+                Logger.d("此条消息是红包消息，但是已经被领取了，忽略")
+                continue
             } else {
-                // 查找是否有红包已领取 TextView的显示，如果有说明
-                val invalidNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(wechatProvider.msgItemRedEnvelopesInvalidId())
-                if (invalidNodeList.isNotEmpty()) {
-                    Logger.d("此条消息是红包消息，但是已经被领取了，忽略")
-                    continue
-                } else {
-                    Logger.d("此条消息是红包消息，且未被领取，执行点击")
-                    findAndClickFirstClickableParentNode(redEnvelopesImageViewNodeList.first())
+                Logger.d("此条消息是红包消息，且未被领取，执行点击")
+                val clickNode = findAndClickFirstClickableParentNode(parentNode.findAccessibilityNodeInfosByViewId(wechatProvider.msgItemRedEnvelopesFlagId())?.firstOrNull())
+                if (clickNode?.isClickable == true) {
+                    break
                 }
             }
         }
@@ -258,7 +255,7 @@ class RedEnvelopesService : AccessibilityService() {
     /**
      * 打开微信红包
      */
-    private fun openWechatRedEnvelopes() {
+    private fun openWechatRedEnvelopes(event: AccessibilityEvent) {
         val rootNode = rootInActiveWindow
         val openRedEnvelopesNodeList = rootNode.findAccessibilityNodeInfosByViewId(wechatProvider.redEnvelopesCoverOpenId())
 
@@ -294,7 +291,7 @@ class RedEnvelopesService : AccessibilityService() {
     /**
      * 找第一个可点击的节点并进行点击
      */
-    private fun findAndClickFirstClickableParentNode(node: AccessibilityNodeInfo?) {
+    private fun findAndClickFirstClickableParentNode(node: AccessibilityNodeInfo?): AccessibilityNodeInfo? {
         var clickNode = node
         while (clickNode != null) {
             if (clickNode.isClickable) {
@@ -303,6 +300,7 @@ class RedEnvelopesService : AccessibilityService() {
             }
             clickNode = clickNode.parent
         }
+        return clickNode
     }
 
     /**
