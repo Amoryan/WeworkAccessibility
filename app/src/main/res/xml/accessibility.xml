@@ -4,6 +4,6 @@
     android:accessibilityFeedbackType="feedbackGeneric"
     android:accessibilityFlags=""
     android:canRetrieveWindowContent="true"
-    android:description="@string/app_name"
+    android:description="@string/app_description"
     android:notificationTimeout="100"
-    android:packageNames="com.tencent.wework" />
+    android:packageNames="com.tencent.wework|com.tencent.mm" />

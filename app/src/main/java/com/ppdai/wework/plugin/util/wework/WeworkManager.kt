@@ -22,18 +22,18 @@ class WeworkManager private constructor() {
         }
     }
 
-    val weworkVersionName: String
-    val weworkVersionCode: Int
-    val weworkProvider: IWeworkProvider
+    val versionName: String
+    val versionCode: Int
+    val provider: IWeworkProvider
 
     init {
         val packageInfo = BaseApplication.appContext.packageManager
                 .getInstalledPackages(0)
                 .firstOrNull { it.packageName == WeworkConfig.PACKAGE_NAME_WEWORK }
-        weworkVersionName = packageInfo?.versionName ?: "unknown"
-        weworkVersionCode = packageInfo?.versionCode ?: 0
+        versionName = packageInfo?.versionName ?: "unknown"
+        versionCode = packageInfo?.versionCode ?: 0
 
-        weworkProvider = when (weworkVersionCode) {
+        provider = when (versionCode) {
             WeworkConfig.VERSION_CODE_14025 -> Wework14025ProviderImpl()
             WeworkConfig.VERSION_CODE_14197 -> Wework14197ProviderImpl()
             else -> Wework14025ProviderImpl()

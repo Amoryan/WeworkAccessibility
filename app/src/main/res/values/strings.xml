@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">皮皮呆助手</string>
+
+    <string name="app_description">实现微信，企业微信自动抢红包功能</string>
 </resources>

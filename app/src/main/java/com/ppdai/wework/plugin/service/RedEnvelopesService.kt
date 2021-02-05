@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import com.ppdai.wework.plugin.constants.SpKeys
 import com.ppdai.wework.plugin.constants.wework.WeworkConfig
 import com.ppdai.wework.plugin.constants.wework.WeworkSpKeys
 import com.ppdai.wework.plugin.core.wework.IWeworkProvider
@@ -26,7 +27,7 @@ class RedEnvelopesService : AccessibilityService() {
         val handler = Handler(Looper.getMainLooper())
     }
 
-    private var weworkProvider: IWeworkProvider = WeworkManager.getInstance().weworkProvider
+    private var weworkProvider: IWeworkProvider = WeworkManager.getInstance().provider
 
     private var currentWindow: String? = null
 
@@ -194,7 +195,7 @@ class RedEnvelopesService : AccessibilityService() {
         // 点击开启红包
         Logger.d("从打开红包节点向上查找第一个可点击的节点")
 
-        val delay: Long = SP.getInstance().getLong(WeworkSpKeys.WEWORK_DELAY_OPEN_RED_ENVELOPES)
+        val delay: Long = SP.getInstance().getLong(SpKeys.DELAY_OPEN_RED_ENVELOPES)
         if (delay > 0L) {
             Logger.d("已开启延迟打开红包，将延迟$delay ms后开启红包")
             handler.postDelayed({ findAndClickFirstClickableParentNode(openRedEnvelopesNodeList.last()) }, delay)

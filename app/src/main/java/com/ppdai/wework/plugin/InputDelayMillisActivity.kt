@@ -3,7 +3,7 @@ package com.ppdai.wework.plugin
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.ppdai.wework.plugin.constants.wework.WeworkSpKeys
+import com.ppdai.wework.plugin.constants.SpKeys
 import com.ppdai.wework.plugin.util.SP
 import kotlinx.android.synthetic.main.activity_input_delay_millis.*
 
@@ -20,7 +20,7 @@ class InputDelayMillisActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_input_delay_millis)
 
-        val configDelayMillis = SP.getInstance().getLong(WeworkSpKeys.WEWORK_DELAY_OPEN_RED_ENVELOPES)
+        val configDelayMillis = SP.getInstance().getLong(SpKeys.DELAY_OPEN_RED_ENVELOPES)
         if (configDelayMillis > 0L) {
             etInput.setText("$configDelayMillis")
             etInput.setSelection(etInput.length())
@@ -33,7 +33,7 @@ class InputDelayMillisActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            SP.getInstance().putLong(WeworkSpKeys.WEWORK_DELAY_OPEN_RED_ENVELOPES, delayMillis)
+            SP.getInstance().putLong(SpKeys.DELAY_OPEN_RED_ENVELOPES, delayMillis)
             finish()
         }
     }
