@@ -2,7 +2,6 @@ package com.ppdai.wework.plugin.service
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
-import android.graphics.Rect
 import android.os.Handler
 import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
@@ -82,7 +81,7 @@ class RedEnvelopesService : AccessibilityService() {
                 val windowName = currentWindow ?: return
 
                 when (windowName) {
-                    WeChatConfig.ACTIVITY_NAME_RED_ENVELOPES_COVER -> openWechatRedEnvelopes(event)
+                    WeChatConfig.ACTIVITY_NAME_RED_ENVELOPES_COVER -> openWechatRedEnvelopes()
                 }
             }
             WeworkConfig.PACKAGE_NAME_WEWORK -> {
@@ -255,24 +254,26 @@ class RedEnvelopesService : AccessibilityService() {
     /**
      * 打开微信红包
      */
-    private fun openWechatRedEnvelopes(event: AccessibilityEvent) {
-        val rootNode = rootInActiveWindow
-        val openRedEnvelopesNodeList = rootNode.findAccessibilityNodeInfosByViewId(wechatProvider.redEnvelopesCoverOpenId())
+    private fun openWechatRedEnvelopes() {
+        handler.postDelayed(Runnable {
+            val rootNode = rootInActiveWindow
+            val openRedEnvelopesNodeList = rootNode.findAccessibilityNodeInfosByViewId(wechatProvider.redEnvelopesCoverOpenId())
 
-        if (openRedEnvelopesNodeList.isEmpty()) {
-            Logger.d("此红包已过期")
-            // 关闭红包封面
-            val closeRedEnvelopesCoverNodeList = rootNode.findAccessibilityNodeInfosByViewId(wechatProvider.redEnvelopesCoverCloseId())
-            findAndClickFirstClickableParentNode(closeRedEnvelopesCoverNodeList.firstOrNull())
-            return
-        }
+            if (openRedEnvelopesNodeList.isEmpty()) {
+                Logger.d("此红包已过期")
+                // 关闭红包封面
+                val closeRedEnvelopesCoverNodeList = rootNode.findAccessibilityNodeInfosByViewId(wechatProvider.redEnvelopesCoverCloseId())
+                findAndClickFirstClickableParentNode(closeRedEnvelopesCoverNodeList.firstOrNull())
+                return@Runnable
+            }
 
-        if (!SP.getInstance().getBoolean(WechatSpKeys.WECHAT_AUTO_OPEN_RED_ENVELOPES)) {
-            Logger.d("微信自动打开红包功能已关闭，请到设置里面开启")
-            return
-        }
+            if (!SP.getInstance().getBoolean(WechatSpKeys.WECHAT_AUTO_OPEN_RED_ENVELOPES)) {
+                Logger.d("微信自动打开红包功能已关闭，请到设置里面开启")
+                return@Runnable
+            }
 
-        openRedEnvelopes(openRedEnvelopesNodeList.last())
+            openRedEnvelopes(openRedEnvelopesNodeList.last())
+        }, 200L)
     }
 
     /**
