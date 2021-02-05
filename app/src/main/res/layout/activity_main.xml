@@ -57,11 +57,12 @@
             </LinearLayout>
 
             <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/tvWework"
                 style="@style/LabelItem"
                 android:layout_marginStart="10dp"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/shape_bg_label"
-                android:text="企业微信设置" />
+                android:text="企业微信" />
 
             <LinearLayout
                 android:layout_width="match_parent"

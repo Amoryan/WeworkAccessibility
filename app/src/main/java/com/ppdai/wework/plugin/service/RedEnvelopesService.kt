@@ -8,8 +8,10 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.ppdai.wework.plugin.constants.wework.WeworkConfig
 import com.ppdai.wework.plugin.constants.wework.WeworkSpKeys
+import com.ppdai.wework.plugin.core.wework.IWeworkProvider
 import com.ppdai.wework.plugin.util.Logger
 import com.ppdai.wework.plugin.util.SP
+import com.ppdai.wework.plugin.util.wework.WeworkManager
 
 /**
  * @author sunshine big boy
@@ -23,6 +25,8 @@ class RedEnvelopesService : AccessibilityService() {
     companion object {
         val handler = Handler(Looper.getMainLooper())
     }
+
+    private var weworkProvider: IWeworkProvider = WeworkManager.getInstance().weworkProvider
 
     private var currentWindow: String? = null
 
@@ -114,7 +118,7 @@ class RedEnvelopesService : AccessibilityService() {
 
         val rootNode = rootInActiveWindow
         // 查找消息Container Node
-        val messageItemContainerNodeList = rootNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_MESSAGE_LIST_ITEM)
+        val messageItemContainerNodeList = rootNode.findAccessibilityNodeInfosByViewId(weworkProvider.msgItemContainerId())
         Logger.d("查找到消息数量: ${messageItemContainerNodeList.size}")
 
         if (messageItemContainerNodeList.isEmpty()) {
@@ -129,19 +133,19 @@ class RedEnvelopesService : AccessibilityService() {
          */
         messageItemContainerNodeList.reverse()
         for (messageItemContainerNode in messageItemContainerNodeList) {
-            val readNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_MESSAGE_LIST_READ_IMAGE)
+            val readNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(weworkProvider.msgItemReadStatusId())
             if (readNodeList.isNotEmpty()) {
                 Logger.d("此条消息为本人发送，忽略")
                 continue
             }
 
             // 消息上找红包ImageView
-            val redEnvelopesImageViewNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_MESSAGE_LIST_RED_ENVELOPES_IMAGE)
+            val redEnvelopesImageViewNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(weworkProvider.msgItemRedEnvelopesFlagId())
             if (redEnvelopesImageViewNodeList.isEmpty()) {
                 Logger.d("此条消息不是红包消息，忽略")
             } else {
                 // 查找是否有红包已领取 TextView的显示，如果有说明
-                val hasOpenNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_MESSAGE_LIST_RED_ENVELOPES_HAS_OPEN)
+                val hasOpenNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(weworkProvider.msgItemRedEnvelopesHasOpenId())
                 if (hasOpenNodeList.isNotEmpty()) {
                     Logger.d("此条消息是红包消息，但是已经被领取了，忽略")
                     continue
@@ -171,13 +175,13 @@ class RedEnvelopesService : AccessibilityService() {
      */
     private fun openRedEnvelopes() {
         val rootNode = rootInActiveWindow
-        val openRedEnvelopesNodeList = rootNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_RED_ENVELOPES_COVER_IMAGE_OPEN)
+        val openRedEnvelopesNodeList = rootNode.findAccessibilityNodeInfosByViewId(weworkProvider.redEnvelopesCoverOpenId())
 
         if (openRedEnvelopesNodeList.isEmpty()) {
             Logger.d("此红包已过期")
             clickRedEnvelopesNode?.let { messageListActivityRedEnvelopesFilterList.add(it) }
             // 关闭红包封面
-            val closeRedEnvelopesCoverNodeList = rootNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_RED_ENVELOPES_COVER_CLOSE)
+            val closeRedEnvelopesCoverNodeList = rootNode.findAccessibilityNodeInfosByViewId(weworkProvider.redEnvelopesCoverCloseId())
             findAndClickFirstClickableParentNode(closeRedEnvelopesCoverNodeList.firstOrNull())
             return
         }
@@ -208,7 +212,7 @@ class RedEnvelopesService : AccessibilityService() {
             return
         }
         val rootNode = rootInActiveWindow
-        val closeNodeList = rootNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_RED_ENVELOPES_DETAIL_CLOSE)
+        val closeNodeList = rootNode.findAccessibilityNodeInfosByViewId(weworkProvider.redEnvelopesDetailCloseId())
         findAndClickFirstClickableParentNode(closeNodeList.firstOrNull())
     }
 

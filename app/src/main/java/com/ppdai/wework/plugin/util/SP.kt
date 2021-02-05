@@ -1,7 +1,6 @@
 package com.ppdai.wework.plugin.util
 
 import android.content.Context
-import android.content.SharedPreferences
 import com.ppdai.wework.plugin.BaseApplication
 
 

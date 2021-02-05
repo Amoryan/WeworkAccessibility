@@ -1,11 +1,13 @@
 package com.ppdai.wework.plugin
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import com.ppdai.wework.plugin.constants.wework.WeworkSpKeys
 import com.ppdai.wework.plugin.util.SP
+import com.ppdai.wework.plugin.util.wework.WeworkManager
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -30,7 +32,10 @@ class MainActivity : AppCompatActivity() {
     /**
      * 企业微信
      */
+    @SuppressLint("SetTextI18n")
     private fun initWeworkGroup() {
+        tvWework.text = "企业微信(版本v${WeworkManager.getInstance().weworkVersionName}，${WeworkManager.getInstance().weworkVersionCode})"
+
         cbWeworkOpenNotification.isChecked = SP.getInstance().getBoolean(WeworkSpKeys.WEWORK_AUTO_CLICK_NOTIFICATION)
         cbWeworkOpenRedEnvelopesMsg.isChecked = SP.getInstance().getBoolean(WeworkSpKeys.WEWORK_AUTO_CLICK_RED_ENVELOPES_MSG)
         cbWeworkOpenRedEnvelopes.isChecked = SP.getInstance().getBoolean(WeworkSpKeys.WEWORK_AUTO_OPEN_RED_ENVELOPES)

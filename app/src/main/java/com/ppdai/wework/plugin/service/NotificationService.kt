@@ -7,8 +7,10 @@ import android.service.notification.StatusBarNotification
 import com.ppdai.wework.plugin.constants.wechat.WeChatConfig
 import com.ppdai.wework.plugin.constants.wework.WeworkConfig
 import com.ppdai.wework.plugin.constants.wework.WeworkSpKeys
+import com.ppdai.wework.plugin.core.wework.IWeworkProvider
 import com.ppdai.wework.plugin.util.Logger
 import com.ppdai.wework.plugin.util.SP
+import com.ppdai.wework.plugin.util.wework.WeworkManager
 
 /**
  * @author sunshine big boy
@@ -18,6 +20,8 @@ import com.ppdai.wework.plugin.util.SP
  * </pre>
  */
 class NotificationService : NotificationListenerService() {
+
+    private var weworkProvider: IWeworkProvider = WeworkManager.getInstance().weworkProvider
 
     override fun onListenerConnected() {
         super.onListenerConnected()
@@ -53,7 +57,7 @@ class NotificationService : NotificationListenerService() {
         val notification = sbn.notification
         val extras: Bundle = notification.extras
         val text = extras.getCharSequence(Notification.EXTRA_TEXT) ?: ""
-        if (text.contains(WeworkConfig.TEXT_NOTIFICATION_RED_ENVELOPES)) {
+        if (text.contains(weworkProvider.notificationRedEnvelopesText())) {
             Logger.d("检测到红包消息，正在打开消息")
             try {
                 notification.contentIntent.send()
