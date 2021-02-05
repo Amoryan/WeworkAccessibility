@@ -6,15 +6,13 @@ import android.os.Handler
 import android.os.Looper
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import com.ppdai.wework.plugin.constants.Config
-import com.ppdai.wework.plugin.constants.SpKeys
+import com.ppdai.wework.plugin.constants.wework.WeworkConfig
+import com.ppdai.wework.plugin.constants.wework.WeworkSpKeys
 import com.ppdai.wework.plugin.util.Logger
 import com.ppdai.wework.plugin.util.SP
 
 /**
  * @author sunshine big boy
- *
- * 企业微信抢红包无障碍服务
  *
  * <pre>
  *      talking is cheap, show me the code
@@ -22,7 +20,7 @@ import com.ppdai.wework.plugin.util.SP
  */
 class RedEnvelopesService : AccessibilityService() {
 
-    companion object{
+    companion object {
         val handler = Handler(Looper.getMainLooper())
     }
 
@@ -34,16 +32,16 @@ class RedEnvelopesService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
-        Logger.d("企业微信红包助手已绑定")
+        Logger.d("皮皮呆助手已绑定")
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
-        Logger.d("企业微信红包助手已解绑")
+        Logger.d("皮皮呆助手已解绑")
         return super.onUnbind(intent)
     }
 
     override fun onInterrupt() {
-        Logger.d("企业微信红包助手被中断")
+        Logger.d("皮皮呆助手被中断")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -69,7 +67,7 @@ class RedEnvelopesService : AccessibilityService() {
         val windowName = currentWindow ?: return
 
         when (windowName) {
-            Config.ACTIVITY_NAME_MESSAGE_LIST -> {
+            WeworkConfig.ACTIVITY_NAME_MESSAGE_LIST -> {
                 Logger.d("当前 Window 是 $currentWindow")
                 // 如果是新的消息列表，清空数据
                 if (rootInActiveWindow != messageListActivityNodeInfo) {
@@ -77,12 +75,12 @@ class RedEnvelopesService : AccessibilityService() {
                     messageListActivityRedEnvelopesFilterList.clear()
                 }
             }
-            Config.ACTIVITY_NAME_RED_ENVELOPES_COVER -> {
+            WeworkConfig.ACTIVITY_NAME_RED_ENVELOPES_COVER -> {
                 Logger.d("当前 Window 是 $currentWindow")
                 // 红包封面
                 openRedEnvelopes()
             }
-            Config.ACTIVITY_NAME_RED_ENVELOPES_DETAIL -> {
+            WeworkConfig.ACTIVITY_NAME_RED_ENVELOPES_DETAIL -> {
                 Logger.d("当前 Window 是 $currentWindow")
             }
         }
@@ -91,14 +89,14 @@ class RedEnvelopesService : AccessibilityService() {
     private fun onWindowContentChanged(event: AccessibilityEvent) {
         val windowName = currentWindow ?: return
         when (windowName) {
-            Config.ACTIVITY_NAME_MESSAGE_LIST -> {
+            WeworkConfig.ACTIVITY_NAME_MESSAGE_LIST -> {
                 // 消息列表界面，查询是否有红包
                 queryRedEnvelopes()
             }
-            Config.ACTIVITY_NAME_RED_ENVELOPES_COVER -> {
+            WeworkConfig.ACTIVITY_NAME_RED_ENVELOPES_COVER -> {
                 // 红包封面
             }
-            Config.ACTIVITY_NAME_RED_ENVELOPES_DETAIL -> {
+            WeworkConfig.ACTIVITY_NAME_RED_ENVELOPES_DETAIL -> {
                 // 红包详情
                 closeRedEnvelopesDetail()
             }
@@ -109,14 +107,14 @@ class RedEnvelopesService : AccessibilityService() {
      * 查询是否有红包节点
      */
     private fun queryRedEnvelopes() {
-        if (!SP.getInstance().getBoolean(SpKeys.AUTO_CLICK_RED_ENVELOPES_MESSAGE)) {
+        if (!SP.getInstance().getBoolean(WeworkSpKeys.WEWORK_AUTO_CLICK_RED_ENVELOPES_MSG)) {
             Logger.d("自动点击红包功能已关闭，请到设置里面开启")
             return
         }
 
         val rootNode = rootInActiveWindow
         // 查找消息Container Node
-        val messageItemContainerNodeList = rootNode.findAccessibilityNodeInfosByViewId(Config.ID_MESSAGE_LIST_ITEM)
+        val messageItemContainerNodeList = rootNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_MESSAGE_LIST_ITEM)
         Logger.d("查找到消息数量: ${messageItemContainerNodeList.size}")
 
         if (messageItemContainerNodeList.isEmpty()) {
@@ -131,19 +129,19 @@ class RedEnvelopesService : AccessibilityService() {
          */
         messageItemContainerNodeList.reverse()
         for (messageItemContainerNode in messageItemContainerNodeList) {
-            val readNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(Config.ID_MESSAGE_LIST_READ_IMAGE)
+            val readNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_MESSAGE_LIST_READ_IMAGE)
             if (readNodeList.isNotEmpty()) {
                 Logger.d("此条消息为本人发送，忽略")
                 continue
             }
 
             // 消息上找红包ImageView
-            val redEnvelopesImageViewNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(Config.ID_MESSAGE_LIST_RED_ENVELOPES_IMAGE)
+            val redEnvelopesImageViewNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_MESSAGE_LIST_RED_ENVELOPES_IMAGE)
             if (redEnvelopesImageViewNodeList.isEmpty()) {
                 Logger.d("此条消息不是红包消息，忽略")
             } else {
                 // 查找是否有红包已领取 TextView的显示，如果有说明
-                val hasOpenNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(Config.ID_MESSAGE_LIST_RED_ENVELOPES_HAS_OPEN)
+                val hasOpenNodeList = messageItemContainerNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_MESSAGE_LIST_RED_ENVELOPES_HAS_OPEN)
                 if (hasOpenNodeList.isNotEmpty()) {
                     Logger.d("此条消息是红包消息，但是已经被领取了，忽略")
                     continue
@@ -173,18 +171,18 @@ class RedEnvelopesService : AccessibilityService() {
      */
     private fun openRedEnvelopes() {
         val rootNode = rootInActiveWindow
-        val openRedEnvelopesNodeList = rootNode.findAccessibilityNodeInfosByViewId(Config.ID_RED_ENVELOPES_COVER_IMAGE_OPEN)
+        val openRedEnvelopesNodeList = rootNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_RED_ENVELOPES_COVER_IMAGE_OPEN)
 
         if (openRedEnvelopesNodeList.isEmpty()) {
             Logger.d("此红包已过期")
             clickRedEnvelopesNode?.let { messageListActivityRedEnvelopesFilterList.add(it) }
             // 关闭红包封面
-            val closeRedEnvelopesCoverNodeList = rootNode.findAccessibilityNodeInfosByViewId(Config.ID_RED_ENVELOPES_COVER_CLOSE)
+            val closeRedEnvelopesCoverNodeList = rootNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_RED_ENVELOPES_COVER_CLOSE)
             findAndClickFirstClickableParentNode(closeRedEnvelopesCoverNodeList.firstOrNull())
             return
         }
 
-        if (!SP.getInstance().getBoolean(SpKeys.AUTO_OPEN_RED_ENVELOPES)) {
+        if (!SP.getInstance().getBoolean(WeworkSpKeys.WEWORK_AUTO_OPEN_RED_ENVELOPES)) {
             Logger.d("自动打开红包功能已关闭，请到设置里面开启")
             return
         }
@@ -192,7 +190,7 @@ class RedEnvelopesService : AccessibilityService() {
         // 点击开启红包
         Logger.d("从打开红包节点向上查找第一个可点击的节点")
 
-        val delay: Long = SP.getInstance().getLong(SpKeys.DELAY_OPEN_RED_ENVELOPES)
+        val delay: Long = SP.getInstance().getLong(WeworkSpKeys.WEWORK_DELAY_OPEN_RED_ENVELOPES)
         if (delay > 0L) {
             Logger.d("已开启延迟打开红包，将延迟$delay ms后开启红包")
             handler.postDelayed({ findAndClickFirstClickableParentNode(openRedEnvelopesNodeList.last()) }, delay)
@@ -205,12 +203,12 @@ class RedEnvelopesService : AccessibilityService() {
      * 关闭红包详情页
      */
     private fun closeRedEnvelopesDetail() {
-        if (!SP.getInstance().getBoolean(SpKeys.AUTO_CLOSE_RED_ENVELOPES_DETAIL)) {
+        if (!SP.getInstance().getBoolean(WeworkSpKeys.WEWORK_AUTO_CLOSE_RED_ENVELOPES_DETAIL)) {
             Logger.d("抢完红包自动关闭界面功能已关闭，请到设置里面开启")
             return
         }
         val rootNode = rootInActiveWindow
-        val closeNodeList = rootNode.findAccessibilityNodeInfosByViewId(Config.ID_RED_ENVELOPES_DETAIL_CLOSE)
+        val closeNodeList = rootNode.findAccessibilityNodeInfosByViewId(WeworkConfig.ID_RED_ENVELOPES_DETAIL_CLOSE)
         findAndClickFirstClickableParentNode(closeNodeList.firstOrNull())
     }
 

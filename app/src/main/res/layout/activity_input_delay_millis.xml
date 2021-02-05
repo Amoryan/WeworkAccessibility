@@ -5,17 +5,29 @@
     android:background="@color/color_bg_layout"
     android:orientation="vertical">
 
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="@color/color_primary"
+        android:gravity="center"
+        android:text="延迟设置"
+        android:textColor="#fff"
+        android:textSize="18dp" />
+
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/etInput"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:background="@android:color/white"
         android:gravity="center_vertical"
         android:hint="请输入延迟ms"
+        android:includeFontPadding="false"
         android:inputType="number"
-        android:maxLength="4"
+        android:maxLength="5"
         android:paddingStart="10dp"
+        android:paddingTop="16dp"
         android:paddingEnd="10dp"
+        android:paddingBottom="16dp"
         android:textSize="14dp" />
 
     <androidx.appcompat.widget.AppCompatTextView
@@ -23,11 +35,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
         android:background="@drawable/shape_bg_ffffff_25"
-        android:paddingStart="40dp"
+        android:paddingStart="80dp"
         android:paddingTop="10dp"
-        android:paddingEnd="40dp"
+        android:paddingEnd="80dp"
         android:paddingBottom="10dp"
         android:text="保存"
         android:textColor="@color/color_text"

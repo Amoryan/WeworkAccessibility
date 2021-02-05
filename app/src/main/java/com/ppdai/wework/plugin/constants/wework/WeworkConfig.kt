@@ -1,13 +1,15 @@
-package com.ppdai.wework.plugin.constants
+package com.ppdai.wework.plugin.constants.wework
 
 /**
  * @author sunshine big boy
+ *
+ * 企业微信3.1.1版本配置
  *
  * <pre>
  *      talking is cheap, show me the code
  * </pre>
  */
-object Config {
+object WeworkConfig {
 
     const val PACKAGE_NAME_WEWORK = "com.tencent.wework"
 
