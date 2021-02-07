@@ -1,4 +1,5 @@
 # apk下载
+安装包在 app/release 下
 [/app/release/app-release.apk](/app/release/app-release.apk)
 
 # 使用方法
