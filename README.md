@@ -1,5 +1,5 @@
 # apk下载
-
+[/app/release/app-release.apk](/app/release/app-release.apk)
 
 # 使用方法
 1. 安装应用
