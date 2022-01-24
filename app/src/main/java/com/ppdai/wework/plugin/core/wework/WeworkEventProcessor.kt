@@ -39,7 +39,7 @@ object WeworkEventProcessor {
      * TYPE_WINDOW_STATE_CHANGED
      */
     private fun windowStateChanged(service: AccessibilityService, event: AccessibilityEvent) {
-        Logger.d("【企业微信】TYPE_WINDOW_STATE_CHANGED")
+        Logger.d("【企业微信】TYPE_WINDOW_STATE_CHANGED, ${event.className?.toString()}")
 
         currentWindow = event.className?.toString()
 
@@ -68,7 +68,7 @@ object WeworkEventProcessor {
             }
             WeworkConfig.ACTIVITY_NAME_RED_ENVELOPES_DETAIL -> {
                 // 关闭红包界面
-                if (!SP.getInstance().getBoolean(WeworkSpKeys.AUTO_CLOSE_RED_ENVELOPES_DETAIL)) {
+                if (!SP.getInstance().getBoolean(WeworkSpKeys.AUTO_CLOSE_RED_ENVELOPES_DETAIL, true)) {
                     Logger.d("【企业微信】抢完红包自动关闭界面已关闭")
                     return
                 }
@@ -154,7 +154,7 @@ object WeworkEventProcessor {
             return
         }
 
-        if (!SP.getInstance().getBoolean(WeworkSpKeys.AUTO_OPEN_RED_ENVELOPES)) {
+        if (!SP.getInstance().getBoolean(WeworkSpKeys.AUTO_OPEN_RED_ENVELOPES, true)) {
             Logger.d("【企业微信】自动打开红包功能已关闭")
             return
         }
