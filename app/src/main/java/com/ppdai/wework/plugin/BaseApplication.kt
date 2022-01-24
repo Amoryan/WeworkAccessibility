@@ -5,10 +5,6 @@ import android.content.Context
 
 /**
  * @author sunshine big boy
- *
- * <pre>
- *      talking is cheap, show me the code
- * </pre>
  */
 class BaseApplication : Application() {
 

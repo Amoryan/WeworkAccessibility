@@ -22,11 +22,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".InputDelayMillisActivity"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustNothing|stateAlwaysHidden" />
-
         <service
             android:name="com.ppdai.wework.plugin.service.RedEnvelopesService"
             android:enabled="true"

@@ -6,10 +6,6 @@ import com.ppdai.wework.plugin.BaseApplication
 
 /**
  * @author sunshine big boy
- *
- * <pre>
- *      talking is cheap, show me the code
- * </pre>
  */
 class SP private constructor() {
 
@@ -26,16 +22,16 @@ class SP private constructor() {
         sp.edit().putBoolean(key, value).commit()
     }
 
-    fun getBoolean(key: String): Boolean {
-        return sp.getBoolean(key, false)
+    fun getBoolean(key: String, defVal: Boolean = false): Boolean {
+        return sp.getBoolean(key, defVal)
     }
 
     fun putLong(key: String, value: Long) {
         sp.edit().putLong(key, value).commit()
     }
 
-    fun getLong(key: String): Long {
-        return sp.getLong(key, 0L)
+    fun getLong(key: String, defVal: Long = 0L): Long {
+        return sp.getLong(key, defVal)
     }
 
     private object Holder {

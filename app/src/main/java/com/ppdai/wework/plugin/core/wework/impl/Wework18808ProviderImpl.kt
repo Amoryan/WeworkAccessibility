@@ -4,16 +4,8 @@ import com.ppdai.wework.plugin.core.wework.IWeworkProvider
 
 /**
  * @author sunshine big boy
- *
- * 企业微信v3.1.2 (14197)
- *
- * <pre>
- *      talking is cheap, show me the code
- * </pre>
  */
 class Wework18808ProviderImpl : IWeworkProvider {
-
-    override fun notificationRedEnvelopesText(): String = "[红包]"
 
     override fun msgItemContainerId(): String = "com.tencent.wework:id/gb8"//gb9
     override fun msgItemReadStatusId(): String = "com.tencent.wework:id/gd9"

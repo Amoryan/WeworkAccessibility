@@ -1,6 +1,5 @@
 package com.ppdai.wework.plugin.util.wework
 
-import android.os.Build
 import com.ppdai.wework.plugin.BaseApplication
 import com.ppdai.wework.plugin.constants.wework.WeworkConfig
 import com.ppdai.wework.plugin.core.wework.IWeworkProvider
@@ -10,10 +9,6 @@ import com.ppdai.wework.plugin.core.wework.impl.Wework18808ProviderImpl
 
 /**
  * @author sunshine big boy
- *
- * <pre>
- *      talking is cheap, show me the code
- * </pre>
  */
 class WeworkManager private constructor() {
 
@@ -31,7 +26,7 @@ class WeworkManager private constructor() {
     init {
         val packageInfo = BaseApplication.appContext.packageManager
             .getInstalledPackages(0)
-            .firstOrNull { it.packageName == WeworkConfig.PACKAGE_NAME_WEWORK }
+            .firstOrNull { it.packageName == WeworkConfig.PACKAGE_NAME }
         versionName = packageInfo?.versionName ?: "unknown"
         versionCode = packageInfo?.versionCode ?: 0
 
